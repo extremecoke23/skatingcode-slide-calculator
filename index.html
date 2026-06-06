@@ -212,6 +212,75 @@ body {
 .help-text { font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.6; }
 .help-text code { background: #eef0f5; padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 11px; }
 
+/* Mobile Virtual Keyboard */
+.mobile-keyboard {
+  display: none;
+  margin-top: 12px;
+  padding: 12px;
+  background: #f8f9fb;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+}
+.mobile-keyboard .kb-section {
+  margin-bottom: 10px;
+}
+.mobile-keyboard .kb-section-title {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.mobile-keyboard .kb-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.mobile-keyboard .kb-btn {
+  padding: 10px 14px;
+  border: 1.5px solid #dde1e8;
+  background: #fff;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-width: 44px;
+  text-align: center;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.mobile-keyboard .kb-btn:active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  transform: scale(0.95);
+}
+.mobile-keyboard .kb-btn.kb-num { background: #e8eaf6; color: var(--primary); }
+.mobile-keyboard .kb-btn.kb-jump { background: #fff3e0; color: #e65100; }
+.mobile-keyboard .kb-btn.kb-mod { background: #fce4ec; color: #c2185b; font-size: 13px; }
+.mobile-keyboard .kb-btn.kb-spin { background: #e8f5e9; color: #2e7d32; font-size: 12px; }
+.mobile-keyboard .kb-btn.kb-step { background: #e3f2fd; color: #1565c0; font-size: 12px; }
+.mobile-keyboard .kb-btn.kb-action { background: var(--primary); color: #fff; font-size: 12px; }
+.mobile-keyboard .kb-btn.kb-plus { background: #f5f5f5; color: #333; font-size: 18px; padding: 8px 16px; }
+.mobile-keyboard .kb-btn.kb-clear { background: var(--danger-bg); color: var(--danger); }
+.mobile-keyboard .kb-toggle {
+  display: none;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 8px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .container { padding: 10px; }
@@ -224,10 +293,31 @@ body {
   .score-board .score-detail { gap: 20px; flex-wrap: wrap; }
   .elements-table { font-size: 11px; }
   .elements-table th, .elements-table td { padding: 5px 3px; }
+  .elements-table th { font-size: 9px; }
+  .elements-table input[type="text"] { padding: 6px 4px; font-size: 12px; }
+  .btn { padding: 10px 14px; font-size: 14px; }
+  .modifier-bar { display: none; }
+  .mobile-keyboard { display: block; }
+  .mobile-keyboard .kb-toggle { display: block; }
+  .mobile-keyboard .kb-content {
+    display: none;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  .mobile-keyboard .kb-content.show {
+    display: block;
+    max-height: 800px;
+  }
+  .actions { gap: 6px; }
+  .actions .btn { padding: 8px 10px; font-size: 12px; }
 }
 @media (max-width: 480px) {
   .pcs-grid, .deductions-grid { grid-template-columns: 1fr; }
   .score-board .score-detail { flex-direction: column; gap: 8px; }
+  .mobile-keyboard .kb-btn { padding: 8px 10px; font-size: 13px; min-width: 38px; }
+  .elements-table th:nth-child(3),
+  .elements-table td:nth-child(3) { display: none; }
 }
 </style>
 </head>
@@ -321,6 +411,96 @@ body {
     <button class="modifier-btn" data-mod="*" title="无效动作">*</button>
     <button class="modifier-btn" data-mod="+REP" title="重复跳跃标记">+REP</button>
     <button class="modifier-btn" data-mod="+SEQ" title="连续跳标记">+SEQ</button>
+  </div>
+
+  <!-- Mobile Virtual Keyboard -->
+  <div class="mobile-keyboard" id="mobileKeyboard">
+    <button class="kb-toggle" id="kbToggle">⌨️ 打开快捷输入面板</button>
+    <div class="kb-content" id="kbContent">
+      <div class="kb-section">
+        <div class="kb-section-title">周数</div>
+        <div class="kb-row">
+          <button class="kb-btn kb-num" data-kb="1">1</button>
+          <button class="kb-btn kb-num" data-kb="2">2</button>
+          <button class="kb-btn kb-num" data-kb="3">3</button>
+          <button class="kb-btn kb-num" data-kb="4">4</button>
+        </div>
+      </div>
+      <div class="kb-section">
+        <div class="kb-section-title">跳跃类型</div>
+        <div class="kb-row">
+          <button class="kb-btn kb-jump" data-kb="T">T</button>
+          <button class="kb-btn kb-jump" data-kb="S">S</button>
+          <button class="kb-btn kb-jump" data-kb="Lo">Lo</button>
+          <button class="kb-btn kb-jump" data-kb="F">F</button>
+          <button class="kb-btn kb-jump" data-kb="Lz">Lz</button>
+          <button class="kb-btn kb-jump" data-kb="A">A</button>
+          <button class="kb-btn kb-plus" data-kb="+">+</button>
+        </div>
+      </div>
+      <div class="kb-section">
+        <div class="kb-section-title">修饰符</div>
+        <div class="kb-row">
+          <button class="kb-btn kb-mod" data-kb="q">q</button>
+          <button class="kb-btn kb-mod" data-kb="<">&lt;</button>
+          <button class="kb-btn kb-mod" data-kb="<<">&lt;&lt;</button>
+          <button class="kb-btn kb-mod" data-kb="e">e</button>
+          <button class="kb-btn kb-mod" data-kb="!">!</button>
+          <button class="kb-btn kb-mod" data-kb="V">V</button>
+          <button class="kb-btn kb-mod" data-kb="*">*</button>
+        </div>
+      </div>
+      <div class="kb-section">
+        <div class="kb-section-title">旋转</div>
+        <div class="kb-row">
+          <button class="kb-btn kb-spin" data-kb="FCSp">FCSp</button>
+          <button class="kb-btn kb-spin" data-kb="FSSp">FSSp</button>
+          <button class="kb-btn kb-spin" data-kb="CCoSp">CCoSp</button>
+          <button class="kb-btn kb-spin" data-kb="LSp">LSp</button>
+          <button class="kb-btn kb-spin" data-kb="USp">USp</button>
+          <button class="kb-btn kb-spin" data-kb="SSp">SSp</button>
+        </div>
+        <div class="kb-row">
+          <button class="kb-btn kb-num" data-kb="1">1</button>
+          <button class="kb-btn kb-num" data-kb="2">2</button>
+          <button class="kb-btn kb-num" data-kb="3">3</button>
+          <button class="kb-btn kb-num" data-kb="4">4</button>
+        </div>
+      </div>
+      <div class="kb-section">
+        <div class="kb-section-title">步法</div>
+        <div class="kb-row">
+          <button class="kb-btn kb-step" data-kb="StSq">StSq</button>
+          <button class="kb-btn kb-step" data-kb="ChSq">ChSq</button>
+          <button class="kb-btn kb-step" data-kb="ChSt">ChSt</button>
+        </div>
+        <div class="kb-row">
+          <button class="kb-btn kb-num" data-kb="1">1</button>
+          <button class="kb-btn kb-num" data-kb="2">2</button>
+          <button class="kb-btn kb-num" data-kb="3">3</button>
+          <button class="kb-btn kb-num" data-kb="4">4</button>
+          <button class="kb-btn kb-num" data-kb="B">B</button>
+        </div>
+      </div>
+      <div class="kb-section">
+        <div class="kb-section-title">常用组合</div>
+        <div class="kb-row">
+          <button class="kb-btn kb-action" data-kb="3Lz+3T">3Lz+3T</button>
+          <button class="kb-btn kb-action" data-kb="2A+3T">2A+3T</button>
+          <button class="kb-btn kb-action" data-kb="3F+2T+2Lo">3F+2T+2Lo</button>
+          <button class="kb-btn kb-action" data-kb="3Lz+2T">3Lz+2T</button>
+          <button class="kb-btn kb-action" data-kb="3S+2T">3S+2T</button>
+        </div>
+      </div>
+      <div class="kb-section">
+        <div class="kb-section-title">动作</div>
+        <div class="kb-row">
+          <button class="kb-btn kb-action" data-kb="+SEQ">+SEQ</button>
+          <button class="kb-btn kb-action" data-kb="+REP">+REP</button>
+          <button class="kb-btn kb-clear" data-kb="CLEAR">⌫ 清空</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1427,6 +1607,39 @@ function insertModifier(mod) {
   onInput(lastFocusedInputIdx);
 }
 
+function insertAtCursor(text) {
+  if (lastFocusedInputIdx < 0 || lastFocusedInputIdx >= EL_ROWS.length) {
+    // If no input focused, focus the first empty one
+    for (let i = 0; i < EL_ROWS.length; i++) {
+      if (!EL_ROWS[i].input.value.trim()) {
+        lastFocusedInputIdx = i;
+        break;
+      }
+    }
+    if (lastFocusedInputIdx < 0) {
+      // All filled, add new row
+      createRow();
+      lastFocusedInputIdx = EL_ROWS.length - 1;
+    }
+  }
+  const row = EL_ROWS[lastFocusedInputIdx];
+  const input = row.input;
+  const val = input.value;
+  const cursorPos = input.selectionStart || val.length;
+  
+  // Insert text at cursor position
+  const before = val.slice(0, cursorPos);
+  const after = val.slice(cursorPos);
+  input.value = before + text + after;
+  
+  // Restore focus and place cursor after inserted text
+  input.focus();
+  const newPos = cursorPos + text.length;
+  input.setSelectionRange(newPos, newPos);
+  
+  onInput(lastFocusedInputIdx);
+}
+
 // ---- Auto half-bonus ----
 
 function autoHalfBonus() {
@@ -1773,6 +1986,32 @@ function init() {
   // Modifier buttons
   document.querySelectorAll('.modifier-btn').forEach(btn => {
     btn.addEventListener('click', () => insertModifier(btn.dataset.mod));
+  });
+
+  // Mobile virtual keyboard
+  const kbToggle = $('kbToggle');
+  const kbContent = $('kbContent');
+  if (kbToggle && kbContent) {
+    kbToggle.addEventListener('click', () => {
+      kbContent.classList.toggle('show');
+      kbToggle.textContent = kbContent.classList.contains('show') ? '⌨️ 关闭快捷输入面板' : '⌨️ 打开快捷输入面板';
+    });
+  }
+  document.querySelectorAll('.mobile-keyboard .kb-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const val = btn.dataset.kb;
+      if (val === 'CLEAR') {
+        if (lastFocusedInputIdx >= 0 && lastFocusedInputIdx < EL_ROWS.length) {
+          const input = EL_ROWS[lastFocusedInputIdx].input;
+          input.value = '';
+          input.focus();
+          onInput(lastFocusedInputIdx);
+        }
+      } else {
+        insertAtCursor(val);
+      }
+    });
   });
 
   // History modal
