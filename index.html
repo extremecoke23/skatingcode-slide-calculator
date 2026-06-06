@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>花样滑冰评分计算器 — 2025-2026赛季</title>
+<style>
+:root {
+  --primary: #5b6abf;
+  --primary-dark: #4a56a0;
+  --accent: #7c4d9e;
+  --bg: #f0f2f7;
+  --card: #ffffff;
+  --text: #2c3e50;
+  --text-muted: #7f8c9b;
+  --border: #e2e6ef;
+  --danger: #e74c3c;
+  --danger-bg: #fef0ef;
+  --warning: #f39c12;
+  --warning-bg: #fefaf0;
+  --success: #27ae60;
+  --success-bg: #eefaf3;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh;
+}
+.container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  color: #fff; border-radius: var(--radius); padding: 28px 32px; margin-bottom: 20px;
+  text-align: center; position: relative; overflow: hidden;
+}
+.header h1 { font-size: 26px; font-weight: 700; letter-spacing: 1px; }
+.header p { opacity: 0.85; font-size: 13px; margin-top: 6px; }
+
+/* Panel */
+.panel {
+  background: var(--card); border-radius: var(--radius); padding: 20px 24px;
+  margin-bottom: 16px; box-shadow: var(--shadow);
+}
+.panel-title {
+  font-size: 16px; font-weight: 600; margin-bottom: 14px; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+.panel-title .icon { font-size: 18px; }
+
+/* Form */
+.form-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
+.form-group { flex: 1; min-width: 180px; }
+.form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+.form-group select, .form-group input {
+  width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+  font-size: 14px; transition: border-color 0.2s; background: #fafbfc; color: var(--text);
+}
+.form-group select:focus, .form-group input:focus { outline: none; border-color: var(--primary); background: #fff; }
+
+/* Rule Summary */
+.rule-summary {
+  background: #f5f6fc; border-left: 4px solid var(--primary); padding: 14px 18px;
+  border-radius: 6px; font-size: 13px; line-height: 2;
+}
+.rule-summary strong { color: var(--primary); }
+.rule-summary .tag {
+  display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px;
+  font-weight: 600; margin: 0 2px;
+}
+.tag-green { background: #d4edda; color: #155724; }
+.tag-red { background: #f8d7da; color: #721c24; }
+.tag-yellow { background: #fff3cd; color: #856404; }
+
+/* Validation */
+.validation-item {
+  padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; font-size: 13px;
+  display: flex; align-items: flex-start; gap: 8px; line-height: 1.5;
+}
+.validation-item.error { background: var(--danger-bg); border-left: 3px solid var(--danger); color: #a93226; }
+.validation-item.warning { background: var(--warning-bg); border-left: 3px solid var(--warning); color: #b7950b; }
+.validation-item.success { background: var(--success-bg); border-left: 3px solid var(--success); color: #1e8449; }
+.validation-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+.validation-rule { font-size: 11px; opacity: 0.7; margin-left: 4px; }
+
+/* Table */
+.table-wrap { overflow-x: auto; }
+.elements-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.elements-table th {
+  background: #f8f9fb; padding: 10px 8px; text-align: left; font-weight: 600;
+  color: var(--text-muted); border-bottom: 2px solid var(--border); white-space: nowrap;
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px;
+}
+.elements-table td { padding: 7px 6px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.elements-table tr:hover { background: #f8f9ff; }
+.elements-table input[type="text"] {
+  width: 100%; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 6px;
+  font-size: 13px; font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+  background: #fafbfc; transition: border-color 0.2s;
+}
+.elements-table input[type="text"]:focus { outline: none; border-color: var(--primary); background: #fff; }
+.elements-table input[type="text"].valid { border-color: var(--success); background: #f5fff8; }
+.elements-table input[type="text"].invalid { border-color: var(--danger); background: #fff5f5; animation: shake 0.3s; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-3px)} 75%{transform:translateX(3px)} }
+.elements-table select { padding: 6px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 12px; background: #fafbfc; }
+.elements-table input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary); }
+.bv-cell, .score-cell { font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace; font-weight: 500; text-align: right; }
+.score-cell { color: var(--primary); font-weight: 600; }
+.element-hint { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+/* Autocomplete */
+.autocomplete-wrap { position: relative; }
+.autocomplete-dropdown {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 100;
+  background: #fff; border: 1.5px solid var(--primary); border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12); max-height: 200px; overflow-y: auto;
+  display: none; font-size: 13px;
+}
+.autocomplete-dropdown.show { display: block; }
+.autocomplete-dropdown .ac-item {
+  padding: 8px 12px; cursor: pointer; display: flex; justify-content: space-between;
+  border-bottom: 1px solid #f0f0f0;
+}
+.autocomplete-dropdown .ac-item:hover, .ac-item.active { background: #f0f2ff; }
+.autocomplete-dropdown .ac-item .ac-code { font-family: monospace; font-weight: 600; }
+.autocomplete-dropdown .ac-item .ac-bv { color: var(--text-muted); font-size: 12px; }
+.autocomplete-dropdown .ac-item .ac-desc { color: var(--text-muted); font-size: 11px; }
+
+/* Buttons */
+.btn {
+  padding: 9px 18px; border: none; border-radius: 8px; font-size: 13px; cursor: pointer;
+  transition: all 0.15s; font-weight: 500; display: inline-flex; align-items: center; gap: 5px;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-secondary { background: #e9ecf2; color: #555; }
+.btn-secondary:hover { background: #dde1e8; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { background: #c0392b; }
+.btn-outline { background: #fff; color: var(--primary); border: 1.5px solid var(--primary); }
+.btn-outline:hover { background: #f0f2ff; }
+.btn-sm { padding: 5px 10px; font-size: 11px; border-radius: 6px; }
+
+/* Modifier buttons */
+.modifier-bar { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+.modifier-btn {
+  padding: 4px 9px; border: 1px solid #dde; background: #fff; border-radius: 5px;
+  font-size: 11px; cursor: pointer; font-family: monospace; transition: all 0.15s;
+}
+.modifier-btn:hover { background: #f0f2ff; border-color: var(--primary); }
+
+/* PCS & Deductions */
+.pcs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.deductions-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.pcs-item label {
+  display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.pcs-item input {
+  width: 100%; padding: 10px; border: 1.5px solid var(--border); border-radius: 8px;
+  font-size: 14px; background: #fafbfc;
+}
+.pcs-item input:focus { outline: none; border-color: var(--primary); }
+.pcs-info { margin-top: 10px; font-size: 13px; color: var(--text-muted); }
+
+/* Score Board */
+.score-board {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  color: #fff; border-radius: var(--radius); padding: 28px 32px; text-align: center;
+  margin-bottom: 16px;
+}
+.score-board .total-label { font-size: 14px; opacity: 0.85; }
+.score-board .total-score { font-size: 52px; font-weight: 700; margin: 4px 0; line-height: 1.1; }
+.score-board .score-detail { display: flex; justify-content: center; gap: 36px; margin-top: 16px; font-size: 14px; opacity: 0.9; }
+.score-board .score-detail div { text-align: center; }
+.score-board .score-detail .label { font-size: 11px; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.5px; }
+.score-board .score-detail .value { font-size: 22px; font-weight: 600; }
+.score-board .bonus-note { font-size: 12px; opacity: 0.7; margin-top: 8px; }
+
+/* Actions */
+.actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; }
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200;
+  display: none; align-items: center; justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: #fff; border-radius: var(--radius); padding: 24px; width: 90%; max-width: 650px;
+  max-height: 80vh; overflow-y: auto; box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+}
+.modal h3 { font-size: 18px; margin-bottom: 16px; }
+.modal .close-btn {
+  float: right; background: none; border: none; font-size: 20px; cursor: pointer;
+  color: var(--text-muted); padding: 0 4px;
+}
+.modal .close-btn:hover { color: var(--text); }
+.history-item {
+  padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+}
+.history-item .hi-info { flex: 1; }
+.history-item .hi-name { font-weight: 600; }
+.history-item .hi-meta { font-size: 12px; color: var(--text-muted); }
+.history-item .hi-actions { display: flex; gap: 6px; }
+.empty-state { text-align: center; color: var(--text-muted); padding: 32px; }
+
+/* Help text */
+.help-text { font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.6; }
+.help-text code { background: #eef0f5; padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 11px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container { padding: 10px; }
+  .header { padding: 20px 16px; }
+  .header h1 { font-size: 20px; }
+  .panel { padding: 14px 16px; }
+  .form-row { flex-direction: column; gap: 10px; }
+  .pcs-grid, .deductions-grid { grid-template-columns: 1fr 1fr; }
+  .score-board .total-score { font-size: 36px; }
+  .score-board .score-detail { gap: 20px; flex-wrap: wrap; }
+  .elements-table { font-size: 11px; }
+  .elements-table th, .elements-table td { padding: 5px 3px; }
+}
+@media (max-width: 480px) {
+  .pcs-grid, .deductions-grid { grid-template-columns: 1fr; }
+  .score-board .score-detail { flex-direction: column; gap: 8px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Header -->
+<div class="header">
+  <h1>⛸️ 花样滑冰评分计算器</h1>
+  <p>2025-2026赛季 · 中国花样滑冰协会竞赛规程 · ISU 评分系统</p>
+</div>
+
+<!-- Settings -->
+<div class="panel">
+  <div class="panel-title"><span class="icon">⚙️</span> 基本信息</div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>赛季</label>
+      <select id="season"><option value="2025-2026" selected>2025-2026 赛季</option></select>
+    </div>
+    <div class="form-group">
+      <label>性别</label>
+      <select id="gender"><option value="male">男子</option><option value="female">女子</option></select>
+    </div>
+    <div class="form-group">
+      <label>年龄组别</label>
+      <select id="ageGroup">
+        <option value="youth">青年组 (13-18岁)</option>
+        <option value="novice_a">少年甲组 (10-16岁)</option>
+        <option value="novice_b">少年乙组 (16岁以下)</option>
+        <option value="novice_c">少年丙组 (14岁以下)</option>
+        <option value="children_a">儿童甲组 (9-11岁)</option>
+        <option value="children_b">儿童乙组 (8-9岁)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>节目类型</label>
+      <select id="segment"><option value="fs">自由滑 (FS)</option><option value="sp">短节目 (SP)</option></select>
+    </div>
+  </div>
+  <div class="rule-summary" id="ruleSummary">请选择组别和节目类型以查看规则摘要…</div>
+</div>
+
+<!-- Rule Validation -->
+<div class="panel">
+  <div class="panel-title"><span class="icon">⚠️</span> 规则检查</div>
+  <div id="validationPanel">
+    <div class="validation-item success"><span class="validation-icon">✅</span><span>请输入动作后开始规则检查…</span></div>
+  </div>
+</div>
+
+<!-- Elements -->
+<div class="panel">
+  <div class="panel-title"><span class="icon">🎯</span> 技术动作输入 (TES)</div>
+  <div class="table-wrap">
+    <table class="elements-table">
+      <thead>
+        <tr>
+          <th style="width:36px">#</th>
+          <th style="width:155px">动作代码</th>
+          <th style="width:50px" title="应用的修饰符">修饰符</th>
+          <th style="width:46px" title="后半程1.1倍加分">后半程</th>
+          <th style="width:42px" title="该动作摔倒">摔倒</th>
+          <th style="width:72px">GOE</th>
+          <th style="width:75px">BV</th>
+          <th style="width:62px">GOE分</th>
+          <th style="width:55px">奖励</th>
+          <th style="width:72px">得分</th>
+          <th style="width:50px"></th>
+        </tr>
+      </thead>
+      <tbody id="elementsBody"></tbody>
+    </table>
+  </div>
+  <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+    <button class="btn btn-outline btn-sm" id="btnAdd">+ 添加动作</button>
+    <button class="btn btn-outline btn-sm" id="btnClear">清空全部</button>
+    <button class="btn btn-outline btn-sm" id="btnAutoHalf" title="自动标记自由滑最后3个跳跃为后半程">🏁 自动后半程</button>
+  </div>
+  <div class="help-text">
+    跳跃：<code>3Lz</code> <code>2A</code> | 连跳：<code>3Lz+3T</code> <code>2A+2T+2Lo</code> | 旋转：<code>FCSp4</code> <code>CCoSp3</code> <code>LSp4</code> | 步法：<code>StSq3</code> <code>ChSq1</code>
+  </div>
+  <div class="modifier-bar">
+    <span style="font-size:11px;color:var(--text-muted);margin-right:6px;">修饰符：</span>
+    <button class="modifier-btn" data-mod="q" title="周数不足 (quarter)">q</button>
+    <button class="modifier-btn" data-mod="<" title="降组 (under-rotated)">&lt;</button>
+    <button class="modifier-btn" data-mod="<<" title="严重降组 (downgraded)">&lt;&lt;</button>
+    <button class="modifier-btn" data-mod="e" title="错刃 (wrong edge)">e</button>
+    <button class="modifier-btn" data-mod="!" title="模糊用刃 (unclear edge)">!</button>
+    <button class="modifier-btn" data-mod="V" title="旋转不规范">V</button>
+    <button class="modifier-btn" data-mod="*" title="无效动作">*</button>
+    <button class="modifier-btn" data-mod="+REP" title="重复跳跃标记">+REP</button>
+    <button class="modifier-btn" data-mod="+SEQ" title="连续跳标记">+SEQ</button>
+  </div>
+</div>
+
+<!-- PCS -->
+<div class="panel">
+  <div class="panel-title"><span class="icon">🎭</span> 节目内容分 (PCS)</div>
+  <div class="pcs-grid">
+    <div class="pcs-item">
+      <label>编排 Composition</label>
+      <input type="number" id="pcsComp" min="0" max="10" step="0.25" value="0">
+    </div>
+    <div class="pcs-item">
+      <label>表现 Presentation</label>
+      <input type="number" id="pcsPres" min="0" max="10" step="0.25" value="0">
+    </div>
+    <div class="pcs-item">
+      <label>滑行技术 Skating Skills</label>
+      <input type="number" id="pcsSkate" min="0" max="10" step="0.25" value="0">
+    </div>
+  </div>
+  <div class="pcs-info">PCS 系数：<strong id="pcsFactorDisp">-</strong> &nbsp;|&nbsp; PCS = (编排 + 表现 + 滑行) × 系数</div>
+</div>
+
+<!-- Deductions -->
+<div class="panel">
+  <div class="panel-title"><span class="icon">➖</span> 扣分项目</div>
+  <div class="deductions-grid">
+    <div class="pcs-item">
+      <label>摔倒次数</label>
+      <input type="number" id="dedFalls" min="0" value="0">
+    </div>
+    <div class="pcs-item">
+      <label>超时扣分</label>
+      <input type="number" id="dedTime" min="0" step="0.5" value="0">
+    </div>
+    <div class="pcs-item">
+      <label>音乐违规</label>
+      <input type="number" id="dedMusic" min="0" step="0.5" value="0">
+    </div>
+    <div class="pcs-item">
+      <label>服装/其他</label>
+      <input type="number" id="dedOther" min="0" step="0.5" value="0">
+    </div>
+  </div>
+  <div class="pcs-info">每次摔倒扣分：<strong id="fallDedDisp">-</strong> &nbsp;|&nbsp; 动作内摔倒已在 TES 中扣除</div>
+</div>
+
+<!-- Score Board -->
+<div class="score-board">
+  <div class="total-label">预估总分</div>
+  <div class="total-score" id="totalScore">0.00</div>
+  <div class="score-detail">
+    <div><div class="label">技术分 TES</div><div class="value" id="tesDisp">0.00</div></div>
+    <div><div class="label">节目内容分 PCS</div><div class="value" id="pcsDisp">0.00</div></div>
+    <div><div class="label">扣分</div><div class="value" id="dedDisp">0.00</div></div>
+  </div>
+  <div class="bonus-note" id="bonusNote"></div>
+</div>
+
+<!-- Actions -->
+<div class="actions">
+  <button class="btn btn-primary" id="btnSave">💾 保存节目</button>
+  <button class="btn btn-secondary" id="btnHistory">📂 加载历史 (0)</button>
+  <button class="btn btn-secondary" id="btnExportCSV">📊 导出 CSV</button>
+  <button class="btn btn-secondary" id="btnExportHTML">📋 导出小分表</button>
+  <button class="btn btn-danger" id="btnReset">🔄 重置</button>
+</div>
+
+</div><!-- /container -->
+
+<!-- History Modal -->
+<div class="modal-overlay" id="historyModal">
+  <div class="modal">
+    <button class="close-btn" id="modalClose">&times;</button>
+    <h3>📂 已保存的节目</h3>
+    <div id="historyList"><div class="empty-state">暂无保存的节目</div></div>
+  </div>
+</div>
+
+<!-- Autocomplete dropdown (singleton, repositioned by JS) -->
+<div class="autocomplete-dropdown" id="acDropdown"></div>
+
+<script>
+// =============================================================================
+// 1. DATA — SOV Table & Age Groups (2025-2026 Season)
+// =============================================================================
+
+const SOV = {
+  jumps: {
+    '4A':  { bv:12.50, rot:4, type:'A',  name:'四周阿克谢尔' },
+    '4Lz': { bv:11.50, rot:4, type:'Lz', name:'四周勾手' },
+    '4F':  { bv:11.00, rot:4, type:'F',  name:'四周菲利普' },
+    '4Lo': { bv:10.50, rot:4, type:'Lo', name:'四周后外结环' },
+    '4S':  { bv:9.70,  rot:4, type:'S',  name:'四周后内结环' },
+    '4T':  { bv:9.50,  rot:4, type:'T',  name:'四周后外点冰' },
+    '3A':  { bv:8.00,  rot:3, type:'A',  name:'三周半阿克谢尔' },
+    '3Lz': { bv:5.90,  rot:3, type:'Lz', name:'三周勾手' },
+    '3F':  { bv:5.30,  rot:3, type:'F',  name:'三周菲利普' },
+    '3Lo': { bv:4.90,  rot:3, type:'Lo', name:'三周后外结环' },
+    '3S':  { bv:4.30,  rot:3, type:'S',  name:'三周后内结环' },
+    '3T':  { bv:4.20,  rot:3, type:'T',  name:'三周后外点冰' },
+    '2A':  { bv:3.30,  rot:2, type:'A',  name:'两周半阿克谢尔' },
+    '2Lz': { bv:2.10,  rot:2, type:'Lz', name:'两周勾手' },
+    '2F':  { bv:1.80,  rot:2, type:'F',  name:'两周菲利普' },
+    '2Lo': { bv:1.70,  rot:2, type:'Lo', name:'两周后外结环' },
+    '2S':  { bv:1.30,  rot:2, type:'S',  name:'两周后内结环' },
+    '2T':  { bv:1.30,  rot:2, type:'T',  name:'两周后外点冰' },
+    '1A':  { bv:1.10,  rot:1, type:'A',  name:'一周半阿克谢尔' },
+    '1Lz': { bv:0.50,  rot:1, type:'Lz', name:'一周勾手' },
+    '1F':  { bv:0.50,  rot:1, type:'F',  name:'一周菲利普' },
+    '1Lo': { bv:0.50,  rot:1, type:'Lo', name:'一周后外结环' },
+    '1S':  { bv:0.40,  rot:1, type:'S',  name:'一周后内结环' },
+    '1T':  { bv:0.40,  rot:1, type:'T',  name:'一周后外点冰' }
+  },
+  spins: {
+    'FCSp4': { bv:3.20, lvl:4, flying:true,  pos:'camel',   name:'跳接燕式旋转4级' },
+    'FCSp3': { bv:2.80, lvl:3, flying:true,  pos:'camel',   name:'跳接燕式旋转3级' },
+    'FCSp2': { bv:2.30, lvl:2, flying:true,  pos:'camel',   name:'跳接燕式旋转2级' },
+    'FCSp1': { bv:1.90, lvl:1, flying:true,  pos:'camel',   name:'跳接燕式旋转1级' },
+    'FSSp4': { bv:3.00, lvl:4, flying:true,  pos:'sit',     name:'跳接蹲踞旋转4级' },
+    'FSSp3': { bv:2.60, lvl:3, flying:true,  pos:'sit',     name:'跳接蹲踞旋转3级' },
+    'FSSp2': { bv:2.20, lvl:2, flying:true,  pos:'sit',     name:'跳接蹲踞旋转2级' },
+    'FSSp1': { bv:1.80, lvl:1, flying:true,  pos:'sit',     name:'跳接蹲踞旋转1级' },
+    'FUSp4': { bv:3.00, lvl:4, flying:true,  pos:'upright', name:'跳接直立旋转4级' },
+    'FUSp3': { bv:2.60, lvl:3, flying:true,  pos:'upright', name:'跳接直立旋转3级' },
+    'FUSp2': { bv:2.20, lvl:2, flying:true,  pos:'upright', name:'跳接直立旋转2级' },
+    'FUSp1': { bv:1.80, lvl:1, flying:true,  pos:'upright', name:'跳接直立旋转1级' },
+    'CCoSp4':{ bv:3.50, lvl:4, flying:false, pos:'combo',   name:'换足联合旋转4级' },
+    'CCoSp3':{ bv:3.00, lvl:3, flying:false, pos:'combo',   name:'换足联合旋转3级' },
+    'CCoSp2':{ bv:2.50, lvl:2, flying:false, pos:'combo',   name:'换足联合旋转2级' },
+    'CCoSp1':{ bv:2.00, lvl:1, flying:false, pos:'combo',   name:'换足联合旋转1级' },
+    'CoSp4': { bv:2.80, lvl:4, flying:false, pos:'combo',   name:'联合旋转4级' },
+    'CoSp3': { bv:2.50, lvl:3, flying:false, pos:'combo',   name:'联合旋转3级' },
+    'CoSp2': { bv:2.00, lvl:2, flying:false, pos:'combo',   name:'联合旋转2级' },
+    'CoSp1': { bv:1.70, lvl:1, flying:false, pos:'combo',   name:'联合旋转1级' },
+    'LSp4':  { bv:2.70, lvl:4, flying:false, pos:'layback', name:'弓身旋转4级' },
+    'LSp3':  { bv:2.40, lvl:3, flying:false, pos:'layback', name:'弓身旋转3级' },
+    'LSp2':  { bv:2.00, lvl:2, flying:false, pos:'layback', name:'弓身旋转2级' },
+    'LSp1':  { bv:1.70, lvl:1, flying:false, pos:'layback', name:'弓身旋转1级' },
+    'USp4':  { bv:2.90, lvl:4, flying:false, pos:'upright', name:'直立旋转4级' },
+    'USp3':  { bv:2.60, lvl:3, flying:false, pos:'upright', name:'直立旋转3级' },
+    'USp2':  { bv:2.20, lvl:2, flying:false, pos:'upright', name:'直立旋转2级' },
+    'USp1':  { bv:1.80, lvl:1, flying:false, pos:'upright', name:'直立旋转1级' },
+    'SSp4':  { bv:2.60, lvl:4, flying:false, pos:'sit',     name:'蹲踞旋转4级' },
+    'SSp3':  { bv:2.30, lvl:3, flying:false, pos:'sit',     name:'蹲踞旋转3级' },
+    'SSp2':  { bv:1.90, lvl:2, flying:false, pos:'sit',     name:'蹲踞旋转2级' },
+    'SSp1':  { bv:1.60, lvl:1, flying:false, pos:'sit',     name:'蹲踞旋转1级' }
+  },
+  steps: {
+    'StSq4': { bv:3.90, lvl:4, name:'定级步法4级' },
+    'StSq3': { bv:3.30, lvl:3, name:'定级步法3级' },
+    'StSq2': { bv:2.60, lvl:2, name:'定级步法2级' },
+    'StSq1': { bv:1.80, lvl:1, name:'定级步法1级' },
+    'StSqB': { bv:1.50, lvl:0, name:'定级步法基础级' },
+    'ChSq1': { bv:3.00, lvl:1, name:'编排步法1级' },
+    'ChSt1': { bv:2.00, lvl:1, name:'编排接续步1级' }
+  },
+  goeScale: { '5':0.50,'4':0.40,'3':0.30,'2':0.20,'1':0.10,'0':0.00,
+              '-1':-0.10,'-2':-0.20,'-3':-0.30,'-4':-0.40,'-5':-0.50 }
+};
+
+// Build code→info lookup
+const ALL_CODES = {};
+(function(){
+  for (const [k,v] of Object.entries(SOV.jumps)) ALL_CODES[k] = { ...v, category:'jump' };
+  for (const [k,v] of Object.entries(SOV.spins)) ALL_CODES[k] = { ...v, category:'spin' };
+  for (const [k,v] of Object.entries(SOV.steps)) ALL_CODES[k] = { ...v, category:'step' };
+})();
+
+// Age group configs: key = group_gender
+const GROUPS = {
+  youth_male: {
+    id:'youth_male', name:'青年组-男子', age:'13-18岁', isu:'junior',
+    maxLvl:4, pcsFactor:{sp:1.67,fs:3.33}, fallDed:1.0, segs:['sp','fs'],
+    jumpRules:{
+      sp:{maxJumps:7,maxCombos:3,maxSeqs:1,maxTripleCombo:1,quads:true,triples:true,axel:true,maxRepeatJump:2,maxRepeatType:3,halfBonus:true},
+      fs:{maxJumps:7,maxCombos:3,maxSeqs:1,maxTripleCombo:1,quads:true,triples:true,axel:true,maxRepeatJump:2,maxRepeatType:3,halfBonus:true,
+        bonus:{'3A':4, quad_any:5, quad_second_type:6, quad_third_type:7, '4A':8 }}
+    },
+    spinRules:{sp:{max:3,flying:true},fs:{max:3,flying:true}},
+    stepRules:{sp:{max:1},fs:{max:1,maxChoreo:1}}
+  },
+  youth_female: {
+    id:'youth_female', name:'青年组-女子', age:'13-18岁', isu:'junior',
+    maxLvl:4, pcsFactor:{sp:1.33,fs:2.67}, fallDed:1.0, segs:['sp','fs'],
+    jumpRules:{
+      sp:{maxJumps:7,maxCombos:3,maxSeqs:1,maxTripleCombo:1,quads:true,triples:true,axel:true,maxRepeatJump:2,maxRepeatType:3,halfBonus:true,
+        bonus:{'3_3_combo':3,'3A':4}},
+      fs:{maxJumps:7,maxCombos:3,maxSeqs:1,maxTripleCombo:1,quads:true,triples:true,axel:true,maxRepeatJump:2,maxRepeatType:3,halfBonus:true,
+        bonus:{'3_3_combo_or_seq':3,'3A':4, quad_any:5, quad_second_type:6, quad_third_type:7 }}
+    },
+    spinRules:{sp:{max:3,flying:true},fs:{max:3,flying:true}},
+    stepRules:{sp:{max:1},fs:{max:1,maxChoreo:1}}
+  },
+  novice_a_male: {
+    id:'novice_a_male', name:'少年甲组-男子', age:'10-16岁', isu:'advance_novice',
+    maxLvl:3, pcsFactor:{sp:1.20,fs:2.40}, fallDed:0.5, segs:['sp','fs'],
+    jumpRules:{
+      sp:{maxJumps:6,maxCombos:1,maxSeqs:0,maxTripleCombo:0,quads:false,triples:true,axel:true,maxRepeatJump:1,maxRepeatType:2,halfBonus:false,
+        comboSecondMustBe:['2Lo','3Lo'], noRepeatInProgram:true},
+      fs:{maxJumps:6,maxCombos:2,maxSeqs:1,maxTripleCombo:1,quads:false,triples:true,axel:true,maxRepeatJump:2,maxRepeatType:3,maxTripleTypesInCombo:2,halfBonus:false}
+    },
+    spinRules:{sp:{max:3,flying:false},fs:{max:2,flying:false}},
+    stepRules:{sp:{max:1},fs:{max:1}}
+  },
+  novice_a_female: {
+    id:'novice_a_female', name:'少年甲组-女子', age:'10-16岁', isu:'advance_novice',
+    maxLvl:3, pcsFactor:{sp:1.07,fs:2.13}, fallDed:0.5, segs:['sp','fs'],
+    jumpRules:{
+      sp:{maxJumps:6,maxCombos:1,maxSeqs:0,maxTripleCombo:0,quads:false,triples:true,axel:true,maxRepeatJump:1,maxRepeatType:2,halfBonus:false,
+        comboSecondMustBe:['2Lo','3Lo'], noRepeatInProgram:true},
+      fs:{maxJumps:6,maxCombos:2,maxSeqs:1,maxTripleCombo:1,quads:false,triples:true,axel:true,maxRepeatJump:2,maxRepeatType:3,maxTripleTypesInCombo:2,halfBonus:false}
+    },
+    spinRules:{sp:{max:3,flying:false},fs:{max:2,flying:false}},
+    stepRules:{sp:{max:1},fs:{max:1}}
+  },
+  novice_b_male: {
+    id:'novice_b_male', name:'少年乙组-男子', age:'16岁以下', isu:'intermediate_novice',
+    maxLvl:2, pcsFactor:{fs:2.00}, fallDed:0.5, segs:['fs'],
+    jumpRules:{
+      fs:{maxJumps:5,maxCombos:2,maxSeqs:1,maxTripleCombo:0,quads:false,triples:false,axel:true,maxRepeatSingle:1,maxRepeatDouble:1,halfBonus:false}
+    },
+    spinRules:{fs:{max:2,flying:false}},
+    stepRules:{fs:{max:1}}
+  },
+  novice_b_female: {
+    id:'novice_b_female', name:'少年乙组-女子', age:'16岁以下', isu:'intermediate_novice',
+    maxLvl:2, pcsFactor:{fs:1.70}, fallDed:0.5, segs:['fs'],
+    jumpRules:{
+      fs:{maxJumps:5,maxCombos:2,maxSeqs:1,maxTripleCombo:0,quads:false,triples:false,axel:true,maxRepeatSingle:1,maxRepeatDouble:1,halfBonus:false}
+    },
+    spinRules:{fs:{max:2,flying:false}},
+    stepRules:{fs:{max:1}}
+  },
+  novice_c_male: {
+    id:'novice_c_male', name:'少年丙组-男子', age:'14岁以下', isu:'basic_novice',
+    maxLvl:2, pcsFactor:{fs:1.67}, fallDed:0.5, segs:['fs'],
+    jumpRules:{
+      fs:{maxJumps:5,maxCombos:2,maxSeqs:1,maxTripleCombo:0,quads:false,maxTriples:1,axel:true,maxRepeatSingle:1,maxRepeatDouble:1,halfBonus:false}
+    },
+    spinRules:{fs:{max:2,flying:true}},
+    stepRules:{fs:{max:1}}
+  },
+  novice_c_female: {
+    id:'novice_c_female', name:'少年丙组-女子', age:'14岁以下', isu:'basic_novice',
+    maxLvl:2, pcsFactor:{fs:1.67}, fallDed:0.5, segs:['fs'],
+    jumpRules:{
+      fs:{maxJumps:5,maxCombos:2,maxSeqs:1,maxTripleCombo:0,quads:false,maxTriples:1,axel:true,maxRepeatSingle:1,maxRepeatDouble:1,halfBonus:false}
+    },
+    spinRules:{fs:{max:2,flying:true}},
+    stepRules:{fs:{max:1}}
+  },
+  children_a_male: {
+    id:'children_a_male', name:'儿童甲组-男子', age:'9-11岁', isu:'basic_novice',
+    maxLvl:2, pcsFactor:{fs:1.67}, fallDed:0.5, segs:['fs'],
+    jumpRules:{
+      fs:{maxJumps:5,maxCombos:2,maxSeqs:1,maxTripleCombo:0,quads:false,maxTriples:1,axel:true,maxRepeatSingle:1,maxRepeatDouble:1,halfBonus:false}
+    },
+    spinRules:{fs:{max:2,flying:true}},
+    stepRules:{fs:{max:1}}
+  },
+  children_a_female: {
+    id:'children_a_female', name:'儿童甲组-女子', age:'9-11岁', isu:'basic_novice',
+    maxLvl:2, pcsFactor:{fs:1.67}, fallDed:0.5, segs:['fs'],
+    jumpRules:{
+      fs:{maxJumps:5,maxCombos:2,maxSeqs:1,maxTripleCombo:0,quads:false,maxTriples:1,axel:true,maxRepeatSingle:1,maxRepeatDouble:1,halfBonus:false}
+    },
+    spinRules:{fs:{max:2,flying:true}},
+    stepRules:{fs:{max:1}}
+  },
+  children_b_male: {
+    id:'children_b_male', name:'儿童乙组-男子', age:'8-9岁', isu:'basic_novice',
+    maxLvl:2, pcsFactor:{fs:1.67}, fallDed:0.5, segs:['fs'],
+    jumpRules:{
+      fs:{maxJumps:5,maxCombos:2,maxSeqs:1,maxTripleCombo:0,quads:false,maxTriples:0,axel:true,maxRepeatSingle:1,maxRepeatDouble:1,halfBonus:false}
+    },
+    spinRules:{fs:{max:2,flying:true}},
+    stepRules:{fs:{max:1}}
+  },
+  children_b_female: {
+    id:'children_b_female', name:'儿童乙组-女子', age:'8-9岁', isu:'basic_novice',
+    maxLvl:2, pcsFactor:{fs:1.67}, fallDed:0.5, segs:['fs'],
+    jumpRules:{
+      fs:{maxJumps:5,maxCombos:2,maxSeqs:1,maxTripleCombo:0,quads:false,maxTriples:0,axel:true,maxRepeatSingle:1,maxRepeatDouble:1,halfBonus:false}
+    },
+    spinRules:{fs:{max:2,flying:true}},
+    stepRules:{fs:{max:1}}
+  }
+};
+
+// =============================================================================
+// 2. ELEMENT PARSER
+// =============================================================================
+
+function parseElement(raw) {
+  raw = String(raw).trim();
+  if (!raw) return null;
+
+  let isSeq = false, isRep = false;
+  let work = raw;
+
+  // strip trailing modifiers
+  if (work.endsWith('+SEQ')) { isSeq = true; work = work.slice(0, -4).trim(); }
+  if (work.endsWith('+REP')) { isRep = true; work = work.slice(0, -4).trim(); }
+
+  const parts = work.split('+').map(s => s.trim()).filter(Boolean);
+  if (parts.length === 0) return null;
+
+  const subEls = [];
+  for (const p of parts) {
+    const sub = parseSingle(p);
+    if (!sub) return null;
+    subEls.push(sub);
+  }
+
+  // classify
+  let elType;
+  const cat = subEls[0].category;
+  if (cat === 'jump') {
+    if (isSeq) elType = 'sequence';
+    else if (subEls.length > 1) elType = 'combo';
+    else elType = 'jump';
+  } else {
+    elType = cat; // spin or step
+  }
+
+  // calculate BV
+  let totalBv = 0;
+  for (const s of subEls) totalBv += s.effBv;
+
+  // sequence: ×0.8
+  if (isSeq) totalBv = Math.round(totalBv * 0.8 * 100) / 100;
+  // repeat: ×0.7
+  if (isRep) totalBv = Math.round(totalBv * 0.7 * 100) / 100;
+  // invalid (*): 0
+  const hasInvalid = subEls.some(s => s.invalid);
+  if (hasInvalid) totalBv = 0;
+
+  return {
+    raw, elType, isSeq, isRep, subEls, totalBv, hasInvalid,
+    // convenience: flatten modifiers
+    allMods: subEls.flatMap(s => s.mods || []),
+    // for validation: collect jump-type sub-elements
+    jumpSubs: subEls.filter(s => s.category === 'jump')
+  };
+}
+
+function parseSingle(s) {
+  s = s.trim();
+  if (!s) return null;
+
+  // Try jump: digit + jump-type letters + modifiers
+  // Valid jump types: T, S, Lo, F, Lz, A (case-insensitive)
+  const jm = s.match(/^(\d)(T|S|Lo|F|Lz|A)(.*)$/i);
+  if (jm) {
+    const rot = parseInt(jm[1]);
+    const jtype = jm[2]; // already captured correctly by the regex
+    const code = rot + jtype;
+    const sov = SOV.jumps[code];
+    if (!sov) return null;
+
+    // parse modifiers from the rest
+    const modRaw = jm[3];
+    const mods = parseModifiers(modRaw);
+    let effBv = sov.bv;
+    let downgraded = false;
+    let invalid = false;
+
+    if (mods.includes('<<')) { effBv = Math.round(sov.bv * 0.5 * 100) / 100; downgraded = true; }
+    else if (mods.includes('<')) { effBv = Math.round(sov.bv * 0.7 * 100) / 100; downgraded = true; }
+    if (mods.includes('*')) { effBv = 0; invalid = true; }
+
+    return { category:'jump', code, rot, jtype, mods, bv:sov.bv, effBv, downgraded, invalid, name:sov.name };
+  }
+
+  // Try spin/step: letters + level
+  const sm = s.match(/^([A-Za-z]+)(\d|[A-Z])$/);
+  if (sm) {
+    const code = s;
+    const spinInfo = SOV.spins[code];
+    const stepInfo = SOV.steps[code];
+    if (spinInfo) return { category:'spin', code, lvl:spinInfo.lvl, bv:spinInfo.bv, effBv:spinInfo.bv, flying:spinInfo.flying, mods:[], downgraded:false, invalid:false, name:spinInfo.name };
+    if (stepInfo) return { category:'step', code, lvl:stepInfo.lvl, bv:stepInfo.bv, effBv:stepInfo.bv, mods:[], downgraded:false, invalid:false, name:stepInfo.name };
+  }
+
+  return null;
+}
+
+function parseModifiers(raw) {
+  const mods = [];
+  let i = 0;
+  while (i < raw.length) {
+    if (raw[i] === '<' && raw[i+1] === '<') { mods.push('<<'); i += 2; }
+    else if ('q<e!V*'.includes(raw[i])) { mods.push(raw[i]); i++; }
+    else { i++; } // skip unknowns
+  }
+  return mods;
+}
+
+// =============================================================================
+// 3. VALIDATOR
+// =============================================================================
+
+function validateProgram(parsedEls, group, seg) {
+  const errors = [], warnings = [];
+  if (!group) return { errors, warnings };
+
+  const rules = group.jumpRules[seg];
+  if (!rules) { errors.push({msg:'该组别无此节目类型', rule:'SEGMENT_NOT_ALLOWED'}); return {errors,warnings}; }
+
+  const jumps = parsedEls.filter(e => e.elType === 'jump' || e.elType === 'combo' || e.elType === 'sequence');
+  const spins = parsedEls.filter(e => e.elType === 'spin');
+  const steps  = parsedEls.filter(e => e.elType === 'step');
+  const combos = jumps.filter(e => e.elType === 'combo');
+  const seqs   = jumps.filter(e => e.elType === 'sequence');
+
+  // helpers
+  const allJumpSubs = () => jumps.flatMap(j => j.jumpSubs);
+  const allSubs = () => parsedEls.flatMap(e => e.subEls);
+
+  // 1. Jump count
+  if (jumps.length > rules.maxJumps)
+    errors.push({msg:`跳跃数量超限：最多${rules.maxJumps}个，当前${jumps.length}个`, rule:'§跳跃数量'});
+
+  // 2. Axel required
+  if (rules.axel) {
+    const hasAxel = allJumpSubs().some(s => s.jtype === 'A');
+    if (!hasAxel) errors.push({msg:'缺少阿克谢尔类型跳跃（必须包含 1A/2A/3A/4A）', rule:'§阿克谢尔要求'});
+  }
+
+  // 3. Quads
+  if (rules.quads === false) {
+    const quads = allJumpSubs().filter(s => s.rot >= 4);
+    if (quads.length > 0) errors.push({msg:`该组别不允许四周跳：${quads.map(s=>s.code).join(', ')}`, rule:'§四周跳限制'});
+  }
+
+  // 4. Triples
+  if (rules.triples === false) {
+    const triples = allJumpSubs().filter(s => s.rot === 3);
+    if (triples.length > 0) errors.push({msg:`该组别不允许三周跳：${triples.map(s=>s.code).join(', ')}`, rule:'§三周跳限制'});
+  }
+  if (rules.maxTriples !== undefined) {
+    const triples = allJumpSubs().filter(s => s.rot === 3);
+    if (triples.length > rules.maxTriples) errors.push({msg:`该组别只允许${rules.maxTriples}个三周跳，当前${triples.length}个`, rule:'§三周跳数量'});
+  }
+
+  // 5. Combo count
+  if (combos.length > rules.maxCombos) errors.push({msg:`联跳数量超限：最多${rules.maxCombos}个，当前${combos.length}个`, rule:'§联跳数量'});
+
+  // 6. Sequence count
+  if (seqs.length > rules.maxSeqs) errors.push({msg:`连续跳数量超限：最多${rules.maxSeqs}个，当前${seqs.length}个`, rule:'§连续跳数量'});
+
+  // 7. Triple combo (3-jump combo)
+  const tripleCombos = combos.filter(c => c.subEls.length >= 3);
+  if (tripleCombos.length > rules.maxTripleCombo) errors.push({msg:`三联跳数量超限：最多${rules.maxTripleCombo}个，当前${tripleCombos.length}个`, rule:'§三联跳限制'});
+
+  // 8. Repeat same jump (exact code)
+  if (rules.maxRepeatJump !== undefined) {
+    const cnt = {};
+    for (const s of allJumpSubs()) { cnt[s.code] = (cnt[s.code]||0)+1; }
+    for (const [k,v] of Object.entries(cnt)) {
+      if (v > rules.maxRepeatJump) errors.push({msg:`"${k}" 重复${v}次，最多允许${rules.maxRepeatJump}次`, rule:'§同跳重复限制'});
+    }
+  }
+
+  // 9. Repeat same type (ignoring rotations)
+  if (rules.maxRepeatType !== undefined) {
+    const cnt = {};
+    for (const s of allJumpSubs()) { cnt[s.jtype] = (cnt[s.jtype]||0)+1; }
+    for (const [k,v] of Object.entries(cnt)) {
+      if (v > rules.maxRepeatType) errors.push({msg:`${k}类型跳跃重复${v}次，最多允许${rules.maxRepeatType}次`, rule:'§同类型重复限制'});
+    }
+  }
+
+  // 10. Single/double repeat limits (novice_b/c, children)
+  if (rules.maxRepeatSingle !== undefined || rules.maxRepeatDouble !== undefined) {
+    const sng={}, dbl={};
+    for (const s of allJumpSubs()) {
+      if (s.rot===1) sng[s.jtype]=(sng[s.jtype]||0)+1;
+      if (s.rot===2) dbl[s.jtype]=(dbl[s.jtype]||0)+1;
+    }
+    if (rules.maxRepeatSingle!==undefined)
+      for (const [k,v] of Object.entries(sng)) if (v>rules.maxRepeatSingle) errors.push({msg:`一周${k}重复${v}次，最多${rules.maxRepeatSingle}次`, rule:'§一周跳重复'});
+    if (rules.maxRepeatDouble!==undefined)
+      for (const [k,v] of Object.entries(dbl)) if (v>rules.maxRepeatDouble) errors.push({msg:`两周${k}重复${v}次，最多${rules.maxRepeatDouble}次`, rule:'§两周跳重复'});
+  }
+
+  // 11. Novice A SP: combo second must be Lo
+  if (rules.comboSecondMustBe && seg==='sp') {
+    for (const c of combos) {
+      if (c.subEls.length >= 2) {
+        const s2 = c.subEls[1];
+        if (s2.category==='jump' && !rules.comboSecondMustBe.includes(s2.code))
+          errors.push({msg:`少年甲组短节目联跳第二跳必须是${rules.comboSecondMustBe.join('或')}，当前为${s2.code}`, rule:'§少年甲组联跳第二跳'});
+      }
+    }
+  }
+
+  // 12. Novice A FS: max triple types in combo/seq repeat
+  if (rules.maxTripleTypesInCombo && seg==='fs') {
+    const csList = jumps.filter(j => j.elType==='combo'||j.elType==='sequence');
+    const types = new Set();
+    for (const cs of csList) for (const s of cs.jumpSubs) if (s.rot===3) types.add(s.jtype);
+    if (types.size > rules.maxTripleTypesInCombo)
+      errors.push({msg:`少年甲组自由滑联跳/连续跳中最多${rules.maxTripleTypesInCombo}种三周跳可重复，当前${types.size}种`, rule:'§少年甲组三周类型'});
+  }
+
+  // 13. Novice A SP: no repeat in program
+  if (rules.noRepeatInProgram && seg==='sp') {
+    const seen = new Set();
+    for (const s of allJumpSubs()) {
+      if (seen.has(s.code)) errors.push({msg:`少年甲组短节目"${s.code}"不得重复出现`, rule:'§少年甲组不可重复'});
+      seen.add(s.code);
+    }
+  }
+
+  // 14. Spin count
+  const sr = group.spinRules[seg];
+  if (sr && spins.length > sr.max) errors.push({msg:`旋转数量超限：最多${sr.max}个，当前${spins.length}个`, rule:'§旋转数量'});
+
+  // 15. Flying spin restriction
+  if (sr && sr.flying===false) {
+    const flySpins = spins.filter(e => e.subEls.some(s => s.flying));
+    if (flySpins.length>0) errors.push({msg:`该组别不允许跳进入旋转：${flySpins.map(e=>e.raw).join(', ')}`, rule:'§跳进入旋转'});
+  }
+
+  // 16. Step count
+  const str = group.stepRules[seg];
+  if (str && steps.length > str.max) errors.push({msg:`步法数量超限：最多${str.max}个，当前${steps.length}个`, rule:'§步法数量'});
+
+  // 17. Level cap
+  for (const el of parsedEls) {
+    for (const s of el.subEls) {
+      if (s.lvl !== undefined && s.lvl > group.maxLvl)
+        warnings.push({msg:`${el.raw} 级别(${s.lvl})超过组别上限(${group.maxLvl})，将按${group.maxLvl}级计算`, rule:'§级别上限'});
+    }
+  }
+
+  // 18. Segment availability
+  if (!group.segs.includes(seg))
+    errors.push({msg:`该组别无${seg==='sp'?'短节目':'自由滑'}项目`, rule:'§节目类型'});
+
+  return { errors, warnings };
+}
+
+// =============================================================================
+// 4. SCORE CALCULATOR
+// =============================================================================
+
+function calculateElementScore(parsed, goe, isFall, isBonus, group, seg) {
+  if (!parsed) return { totalBv:0, cappedBv:0, goeVal:0, bonus:0, fallDed:0, total:0 };
+
+  // Use parsed.totalBv directly — parseElement already applied all modifiers correctly
+  // For spins/steps with level cap, we need to adjust
+  let baseBv = parsed.totalBv;
+  
+  // Level cap adjustment for spins/steps only (jumps don't have lvl)
+  for (const s of parsed.subEls) {
+    if (s.lvl !== undefined && s.lvl > group.maxLvl) {
+      // Replace the over-level element's BV with capped version
+      const cappedCode = s.code.replace(/\d+$/, String(group.maxLvl));
+      const capped = ALL_CODES[cappedCode];
+      if (capped) {
+        baseBv = baseBv - s.effBv + capped.bv;
+      }
+    }
+  }
+
+  // GOE
+  const goeKey = String(goe);
+  const goeFactor = SOV.goeScale[goeKey] || 0;
+
+  // Edge issue → max GOE +2
+  const hasEdgeIssue = parsed.allMods.includes('e') || parsed.allMods.includes('!');
+  const effectiveGoeFactor = hasEdgeIssue ? Math.min(goeFactor, 0.20) : goeFactor;
+
+  const goeVal = Math.round(baseBv * effectiveGoeFactor * 100) / 100;
+
+  // Fall deduction
+  const fallDed = isFall ? group.fallDed : 0;
+
+  // Half bonus (second half 1.1x = +10% of BV)
+  const rules = group.jumpRules[seg];
+  let bonus = 0;
+  if (isBonus && rules && rules.halfBonus && (parsed.elType==='jump'||parsed.elType==='combo'||parsed.elType==='sequence')) {
+    bonus = Math.round(baseBv * 0.1 * 100) / 100;
+  }
+
+  const total = baseBv + goeVal + bonus - fallDed;
+  return { totalBv:baseBv, cappedBv:baseBv, goeVal, bonus, fallDed, total };
+}
+
+function calcBonusJumps(parsedEls, group, seg) {
+  const rules = group.jumpRules[seg];
+  if (!rules || !rules.bonus) return { points:0, details:[] };
+
+  const bonus = rules.bonus;
+  let points = 0;
+  const details = [];
+  const jumps = parsedEls.filter(e => e.elType==='jump'||e.elType==='combo'||e.elType==='sequence');
+  const allSubs = jumps.flatMap(j => j.jumpSubs);
+
+  // Helper: check if a jump is eligible for bonus (no q, <, <<, *)
+  function isEligible(s) {
+    return !s.mods || !s.mods.some(m => ['q','<','<<','*'].includes(m));
+  }
+
+  // 3A bonus
+  if (bonus['3A']) {
+    const has3A = allSubs.some(s => s.code==='3A' && isEligible(s));
+    if (has3A) { points += bonus['3A']; details.push(`3A 奖励 +${bonus['3A']}`); }
+  }
+
+  // 4A bonus
+  if (bonus['4A']) {
+    const has4A = allSubs.some(s => s.code==='4A' && isEligible(s));
+    if (has4A) { points += bonus['4A']; details.push(`4A 奖励 +${bonus['4A']}`); }
+  }
+
+  // Quad bonuses
+  const quadTypes = new Set();
+  for (const s of allSubs) {
+    if (s.rot >= 4 && s.jtype !== 'A' && isEligible(s)) quadTypes.add(s.jtype);
+  }
+  for (const s of allSubs) {
+    if (s.rot === 4 && s.jtype === 'A' && isEligible(s)) quadTypes.add('A'); // 4A counts as quad type too
+  }
+  if (bonus.quad_any && quadTypes.size >= 1) {
+    points += bonus.quad_any;
+    details.push(`四周跳奖励 +${bonus.quad_any}`);
+  }
+  if (bonus.quad_second_type && quadTypes.size >= 2) {
+    points += bonus.quad_second_type;
+    details.push(`第二种四周跳奖励 +${bonus.quad_second_type}`);
+  }
+  if (bonus.quad_third_type && quadTypes.size >= 3) {
+    points += bonus.quad_third_type;
+    details.push(`第三种四周跳奖励 +${bonus.quad_third_type}`);
+  }
+
+  // 3-3 combo bonus
+  if (bonus['3_3_combo'] && seg==='sp') {
+    const has33 = jumps.some(j => {
+      const js = j.jumpSubs;
+      if (js.length < 2) return false;
+      return js[0].rot === 3 && js[1].rot === 3 && isEligible(js[0]) && isEligible(js[1]);
+    });
+    if (has33) { points += bonus['3_3_combo']; details.push(`三-三连跳奖励 +${bonus['3_3_combo']}`); }
+  }
+  if (bonus['3_3_combo_or_seq'] && seg==='fs') {
+    const has33 = jumps.some(j => {
+      const js = j.jumpSubs;
+      if (js.length < 2) return false;
+      return js[0].rot === 3 && js[1].rot === 3 && isEligible(js[0]) && isEligible(js[1]);
+    });
+    if (has33) { points += bonus['3_3_combo_or_seq']; details.push(`三-三连跳/连续跳奖励 +${bonus['3_3_combo_or_seq']}`); }
+  }
+
+  return { points, details };
+}
+
+function calculateTotal(programData, group, seg) {
+  if (!group) return null;
+
+  let tes = 0;
+  const parsedEls = [];
+  for (const item of programData) {
+    const p = parseElement(item.code);
+    if (!p) continue;
+    parsedEls.push(p);
+    const sc = calculateElementScore(p, item.goe, item.isFall, item.isBonus, group, seg);
+    tes += sc.total;
+  }
+
+  // Bonus jumps
+  const bonus = calcBonusJumps(parsedEls, group, seg);
+  tes += bonus.points;
+
+  // PCS
+  const comp  = parseFloat($('pcsComp').value) || 0;
+  const pres  = parseFloat($('pcsPres').value) || 0;
+  const skate = parseFloat($('pcsSkate').value) || 0;
+  const factor = group.pcsFactor[seg] || 0;
+  const pcs = (comp + pres + skate) * factor;
+
+  // Deductions
+  const falls  = parseInt($('dedFalls').value) || 0;
+  const tDed   = parseFloat($('dedTime').value) || 0;
+  const mDed   = parseFloat($('dedMusic').value) || 0;
+  const oDed   = parseFloat($('dedOther').value) || 0;
+  const totalDed = falls * group.fallDed + tDed + mDed + oDed;
+
+  const total = tes + pcs - totalDed;
+  return { tes, pcs, totalDed, total, factor, bonus, fallDedPer: group.fallDed };
+}
+
+// =============================================================================
+// 5. UI STATE & RENDERING
+// =============================================================================
+
+const $ = id => document.getElementById(id);
+const EL_ROWS = [];    // { tr, input, cbHalf, cbFall, selGoe }
+let activeAcIdx = -1;  // index of input with autocomplete open
+let acResults = [];
+let acSel = -1;
+
+function getGroupKey() {
+  const g = $('ageGroup').value;
+  const gen = $('gender').value;
+  return g + '_' + gen;
+}
+
+function getGroup() { return GROUPS[getGroupKey()]; }
+
+function getSegment() { return $('segment').value; }
+
+function collectProgramData() {
+  const data = [];
+  for (const row of EL_ROWS) {
+    const code = row.input.value.trim();
+    if (!code) continue;
+    data.push({
+      code,
+      goe: parseInt(row.selGoe.value) || 0,
+      isFall: row.cbFall.checked,
+      isBonus: row.cbHalf.checked
+    });
+  }
+  return data;
+}
+
+function collectParsedElements() {
+  return EL_ROWS
+    .map(r => parseElement(r.input.value))
+    .filter(Boolean);
+}
+
+// ---- Render ----
+
+function refreshAll() {
+  const group = getGroup();
+  const seg = getSegment();
+  const programData = collectProgramData();
+  const parsedEls = collectParsedElements();
+
+  // Update each row's BV/score cells
+  for (let i = 0; i < EL_ROWS.length; i++) {
+    const row = EL_ROWS[i];
+    const code = row.input.value.trim();
+    const cells = row.tr.cells;
+
+    if (!code) {
+      cells[2].textContent = '-';
+      cells[6].textContent = '-';
+      cells[7].textContent = '-';
+      cells[8].textContent = '-';
+      cells[9].textContent = '-';
+      continue;
+    }
+
+    const parsed = parseElement(code);
+    if (!parsed) {
+      cells[2].textContent = '?';
+      cells[6].textContent = '?';
+      cells[7].textContent = '?';
+      cells[8].textContent = '?';
+      cells[9].textContent = '?';
+      continue;
+    }
+
+    // Display modifiers
+    const modStr = parsed.allMods.length > 0 ? parsed.allMods.join('') : '-';
+    cells[2].textContent = modStr;
+    cells[2].title = parsed.allMods.map(m => {
+      const desc = {q:'周数不足', '<':'降组', '<<':'严重降组', e:'错刃', '!':'模糊用刃', V:'摔倒', '*':'无效'};
+      return desc[m] || m;
+    }).join(', ');
+
+    const goe = parseInt(row.selGoe.value) || 0;
+    const sc = calculateElementScore(parsed, goe, row.cbFall.checked, row.cbHalf.checked, group, seg);
+    
+    // BV display: show original → effective for downgraded elements
+    let bvDisplay = sc.totalBv.toFixed(2);
+    const hasDg = parsed.subEls.some(s => s.downgraded);
+    if (hasDg) {
+      const origBv = parsed.subEls.reduce((sum, s) => sum + s.bv, 0);
+      bvDisplay = origBv.toFixed(2) + '→' + sc.totalBv.toFixed(2);
+    }
+    cells[6].textContent = bvDisplay;
+    cells[6].title = '原始BV→有效BV';
+    
+    cells[7].textContent = (sc.goeVal >= 0 ? '+' : '') + sc.goeVal.toFixed(2);
+    cells[8].textContent = sc.bonus > 0 ? ('+' + sc.bonus.toFixed(2)) : '-';
+    cells[9].textContent = sc.total.toFixed(2);
+  }
+
+  // Validation
+  const validation = validateProgram(parsedEls, group, seg);
+  renderValidation(validation);
+
+  // Total
+  const result = calculateTotal(programData, group, seg);
+  if (result) {
+    $('tesDisp').textContent = result.tes.toFixed(2);
+    $('pcsDisp').textContent = result.pcs.toFixed(2);
+    $('dedDisp').textContent = result.totalDed.toFixed(2);
+    $('totalScore').textContent = result.total.toFixed(2);
+    if (result.bonus && result.bonus.details.length > 0) {
+      $('bonusNote').textContent = '🏅 奖励加分：' + result.bonus.details.join(' | ') + ' | 合计 +' + result.bonus.points;
+    } else {
+      $('bonusNote').textContent = '';
+    }
+  }
+}
+
+function renderValidation(v) {
+  let html = '';
+  if (v.errors.length === 0 && v.warnings.length === 0) {
+    html = '<div class="validation-item success"><span class="validation-icon">✅</span><span>所有规则检查通过！节目编排合规。</span></div>';
+  }
+  for (const e of v.errors)
+    html += `<div class="validation-item error"><span class="validation-icon">❌</span><span>${escHtml(e.msg)} <span class="validation-rule">[${escHtml(e.rule)}]</span></span></div>`;
+  for (const w of v.warnings)
+    html += `<div class="validation-item warning"><span class="validation-icon">⚠️</span><span>${escHtml(w.msg)} <span class="validation-rule">[${escHtml(w.rule)}]</span></span></div>`;
+  $('validationPanel').innerHTML = html;
+}
+
+function updateRuleSummary() {
+  const group = getGroup();
+  const seg = getSegment();
+  const gender = $('gender').value;
+  if (!group) { $('ruleSummary').innerHTML = '请选择组别…'; return; }
+
+  const rules = group.jumpRules[seg];
+  if (!rules) { $('ruleSummary').innerHTML = `<strong>${group.name}</strong> 不包含${seg==='sp'?'短节目':'自由滑'}项目`; return; }
+
+  let s = `<strong>${group.name}</strong> · ${group.age} · ${seg==='sp'?'短节目 SP':'自由滑 FS'}<br>`;
+  s += `• 最高级别：<span class="tag tag-green">${group.maxLvl}级</span> `;
+  s += `• PCS系数：<strong>${group.pcsFactor[seg] || '-'}</strong> `;
+  s += `• 摔倒扣分：<strong>${group.fallDed}分/次</strong><br>`;
+  s += `• 跳跃总数 ≤${rules.maxJumps} · 联跳 ≤${rules.maxCombos} · 连续跳 ≤${rules.maxSeqs} `;
+  s += `• ${rules.quads ? '<span class="tag tag-green">允许四周</span>' : '<span class="tag tag-red">禁止四周</span>'}`;
+  if (rules.triples === false) s += ` · <span class="tag tag-red">禁止三周</span>`;
+  else if (rules.maxTriples !== undefined) s += ` · 三周≤${rules.maxTriples}`;
+  s += `<br>• ${rules.axel ? '必须有阿克谢尔跳' : ''}`;
+  s += ` · 同跳重复≤${rules.maxRepeatJump ?? '-'}次 · 同型重复≤${rules.maxRepeatType ?? '-'}次`;
+  if (rules.halfBonus) s += ` · <span class="tag tag-yellow">后半程1.1倍</span>`;
+  if (rules.comboSecondMustBe) s += `<br>• <strong>特殊：</strong>联跳第二跳必须是${rules.comboSecondMustBe.join('或')}`;
+  if (rules.noRepeatInProgram) s += `<br>• <strong>特殊：</strong>节目中不得重复任意跳跃`;
+  if (rules.maxTripleTypesInCombo) s += `<br>• <strong>特殊：</strong>联跳中最多${rules.maxTripleTypesInCombo}种三周可重复`;
+  if (rules.bonus) {
+    const b = rules.bonus;
+    const bStrs = [];
+    if (b['3A']) bStrs.push(`3A +${b['3A']}`);
+    if (b['4A']) bStrs.push(`4A +${b['4A']}`);
+    if (b.quad_any) bStrs.push(`四周 +${b.quad_any}`);
+    if (b.quad_second_type) bStrs.push(`第二种四周 +${b.quad_second_type}`);
+    if (b.quad_third_type) bStrs.push(`第三种四周 +${b.quad_third_type}`);
+    if (b['3_3_combo']) bStrs.push(`三-三连跳 +${b['3_3_combo']}`);
+    if (b['3_3_combo_or_seq']) bStrs.push(`三-三连跳/连续跳 +${b['3_3_combo_or_seq']}`);
+    if (bStrs.length) s += `<br>• <strong>🏅 奖励加分：</strong>${bStrs.join(' | ')}`;
+  }
+
+  $('ruleSummary').innerHTML = s;
+  $('pcsFactorDisp').textContent = group.pcsFactor[seg] || '-';
+  $('fallDedDisp').textContent = group.fallDed;
+}
+
+function escHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+// ---- Row management ----
+
+function createRow() {
+  const idx = EL_ROWS.length;
+  const tr = document.createElement('tr');
+
+  const tdNum = ce('td', String(idx+1));
+  const tdCode = ce('td');
+  const wrap = ce('div'); wrap.className = 'autocomplete-wrap';
+  const inp = ce('input'); inp.type = 'text'; inp.className = 'element-input'; inp.placeholder = '如: 3Lz+2T';
+  inp.addEventListener('input', () => { onInput(idx); });
+  inp.addEventListener('focus', () => { onFocus(idx); });
+  inp.addEventListener('blur', () => { setTimeout(()=>closeAc(),150); });
+  inp.addEventListener('keydown', (e) => { onKeydown(e, idx); });
+  wrap.appendChild(inp);
+  tdCode.appendChild(wrap);
+
+  const tdMods = ce('td'); tdMods.className = 'mod-cell'; tdMods.style.fontSize = '11px'; tdMods.style.color = 'var(--text-muted)'; tdMods.textContent = '-';
+
+  const tdHalf = ce('td'); tdHalf.style.textAlign = 'center';
+  const cbHalf = ce('input'); cbHalf.type = 'checkbox'; cbHalf.title = '后半程1.1倍加分'; cbHalf.addEventListener('change', refreshAll);
+  tdHalf.appendChild(cbHalf);
+
+  const tdFall = ce('td'); tdFall.style.textAlign = 'center';
+  const cbFall = ce('input'); cbFall.type = 'checkbox'; cbFall.title = '该动作摔倒'; cbFall.addEventListener('change', refreshAll);
+  tdFall.appendChild(cbFall);
+
+  const tdGoe = ce('td');
+  const selGoe = ce('select');
+  for (let g = 5; g >= -5; g--) {
+    const opt = ce('option'); opt.value = String(g); opt.textContent = (g>=0?'+':'')+g; if(g===0) opt.selected=true; selGoe.appendChild(opt);
+  }
+  selGoe.addEventListener('change', refreshAll);
+  tdGoe.appendChild(selGoe);
+
+  const tdBv = ce('td'); tdBv.className = 'bv-cell'; tdBv.textContent = '-';
+  const tdGoeVal = ce('td'); tdGoeVal.className = 'score-cell'; tdGoeVal.textContent = '-';
+  const tdBonus = ce('td'); tdBonus.className = 'score-cell'; tdBonus.textContent = '-';
+  const tdScore = ce('td'); tdScore.className = 'score-cell'; tdScore.textContent = '-';
+  const tdAct = ce('td');
+  const btnDel = ce('button'); btnDel.className = 'btn btn-danger btn-sm'; btnDel.textContent = '✕';
+  btnDel.addEventListener('click', () => removeRow(idx));
+  tdAct.appendChild(btnDel);
+
+  tr.append(tdNum, tdCode, tdMods, tdHalf, tdFall, tdGoe, tdBv, tdGoeVal, tdBonus, tdScore, tdAct);
+  $('elementsBody').appendChild(tr);
+
+  const row = { tr, input:inp, cbHalf, cbFall, selGoe };
+  EL_ROWS.push(row);
+  return row;
+}
+
+function ce(tag, text) { const e=document.createElement(tag); if(text!==undefined) e.textContent=text; return e; }
+
+function removeRow(idx) {
+  if (EL_ROWS.length <= 1) return;
+  const row = EL_ROWS[idx];
+  row.tr.remove();
+  EL_ROWS.splice(idx, 1);
+  reindexRows();
+  refreshAll();
+}
+
+function reindexRows() {
+  for (let i = 0; i < EL_ROWS.length; i++) {
+    EL_ROWS[i].tr.cells[0].textContent = String(i+1);
+  }
+}
+
+function clearAllRows() {
+  EL_ROWS.length = 0;
+  $('elementsBody').innerHTML = '';
+  for (let i = 0; i < 8; i++) createRow();
+  refreshAll();
+}
+
+// ---- Autocomplete ----
+
+function onFocus(idx) {
+  lastFocusedInputIdx = idx;
+  activeAcIdx = idx;
+  const code = EL_ROWS[idx].input.value.trim();
+  if (code) showAc(idx, code);
+}
+
+function onInput(idx) {
+  const row = EL_ROWS[idx];
+  const code = row.input.value.trim();
+  // visual feedback
+  if (!code) {
+    row.input.className = 'element-input';
+  } else {
+    const p = parseElement(code);
+    row.input.className = p ? 'element-input valid' : 'element-input invalid';
+  }
+  showAc(idx, code);
+  refreshAll();
+}
+
+function showAc(idx, query) {
+  const dd = $('acDropdown');
+  if (!query || query.length < 1) { dd.classList.remove('show'); acResults=[]; acSel=-1; return; }
+
+  // Find matching codes
+  const q = query.toUpperCase().replace(/\+/g, ''); // strip + for combo matching
+  // match: starts with query, or contains query after a +
+  const parts = query.split('+').map(s=>s.trim().toUpperCase());
+  const lastPart = parts[parts.length-1];
+
+  const candidates = [];
+  for (const [code, info] of Object.entries(ALL_CODES)) {
+    if (code.toUpperCase().startsWith(lastPart)) {
+      candidates.push({ code, info, score: 0 });
+    } else if (code.toUpperCase().includes(lastPart) && lastPart.length >= 2) {
+      candidates.push({ code, info, score: 1 });
+    }
+  }
+  candidates.sort((a,b) => a.score - b.score || a.code.length - b.code.length);
+  acResults = candidates.slice(0, 20);
+  acSel = -1;
+
+  if (acResults.length === 0) { dd.classList.remove('show'); return; }
+
+  let html = '';
+  for (let i = 0; i < acResults.length; i++) {
+    const r = acResults[i];
+    html += `<div class="ac-item${i===0?' active':''}" data-idx="${i}">
+      <span class="ac-code">${r.code}</span>
+      <span class="ac-bv">BV ${r.info.bv.toFixed(2)}</span>
+      <span class="ac-desc">${r.info.name||''}</span>
+    </div>`;
+  }
+  dd.innerHTML = html;
+  dd.classList.add('show');
+
+  // Position
+  const inp = EL_ROWS[idx].input;
+  const rect = inp.getBoundingClientRect();
+  dd.style.position = 'fixed';
+  dd.style.top = (rect.bottom + 2) + 'px';
+  dd.style.left = rect.left + 'px';
+  dd.style.minWidth = rect.width + 'px';
+
+  // Click handlers
+  dd.querySelectorAll('.ac-item').forEach(item => {
+    item.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      const si = parseInt(item.dataset.idx);
+      applyAc(activeAcIdx, si);
+    });
+  });
+}
+
+function closeAc() {
+  $('acDropdown').classList.remove('show');
+  acResults = [];
+  acSel = -1;
+}
+
+function applyAc(rowIdx, acIdx) {
+  if (acIdx < 0 || acIdx >= acResults.length) return;
+  const row = EL_ROWS[rowIdx];
+  if (!row) return;
+  const code = row.input.value.trim();
+  const parts = code.split('+').map(s => s.trim());
+  parts[parts.length - 1] = acResults[acIdx].code;
+  row.input.value = parts.join('+');
+  row.input.focus();
+  row.input.className = 'element-input valid';
+  closeAc();
+  refreshAll();
+}
+
+function onKeydown(e, idx) {
+  const dd = $('acDropdown');
+  if (!dd.classList.contains('show')) return;
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    acSel = Math.min(acSel + 1, acResults.length - 1);
+    updateAcHighlight();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    acSel = Math.max(acSel - 1, -1);
+    updateAcHighlight();
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (acSel >= 0) applyAc(idx, acSel);
+    else if (acResults.length > 0) applyAc(idx, 0);
+  } else if (e.key === 'Escape') {
+    closeAc();
+  }
+}
+
+function updateAcHighlight() {
+  const items = $('acDropdown').querySelectorAll('.ac-item');
+  items.forEach((item, i) => item.classList.toggle('active', i === acSel));
+}
+
+// ---- Modifier insertion ----
+
+let lastFocusedInputIdx = -1;
+
+function insertModifier(mod) {
+  if (lastFocusedInputIdx < 0 || lastFocusedInputIdx >= EL_ROWS.length) return;
+  const row = EL_ROWS[lastFocusedInputIdx];
+  const input = row.input;
+  const val = input.value;
+  const cursorPos = input.selectionStart || val.length;
+  
+  // For combo/sequence: find which jump segment the cursor is in
+  const parts = val.split('+');
+  let pos = 0;
+  let targetPartIdx = parts.length - 1; // default: last part
+  
+  for (let i = 0; i < parts.length; i++) {
+    const partLen = parts[i].length;
+    if (cursorPos >= pos && cursorPos <= pos + partLen) {
+      targetPartIdx = i;
+      break;
+    }
+    pos += partLen + 1; // +1 for the '+' separator
+  }
+  
+  // Insert modifier at the end of the target part
+  parts[targetPartIdx] = parts[targetPartIdx] + mod;
+  input.value = parts.join('+');
+  
+  // Restore focus and place cursor after the inserted modifier
+  input.focus();
+  const newCursorPos = pos + parts[targetPartIdx].length;
+  input.setSelectionRange(newCursorPos, newCursorPos);
+  
+  onInput(lastFocusedInputIdx);
+}
+
+// ---- Auto half-bonus ----
+
+function autoHalfBonus() {
+  const seg = getSegment();
+  if (seg !== 'fs') { alert('后半程加分仅适用于自由滑 (FS)'); return; }
+  // find all jump rows (non-empty, valid jump/combo/sequence)
+  const jumpIdxs = [];
+  for (let i = 0; i < EL_ROWS.length; i++) {
+    const code = EL_ROWS[i].input.value.trim();
+    if (!code) continue;
+    const p = parseElement(code);
+    if (p && (p.elType==='jump'||p.elType==='combo'||p.elType==='sequence')) jumpIdxs.push(i);
+  }
+  // uncheck all
+  for (const row of EL_ROWS) row.cbHalf.checked = false;
+  // check last 3
+  const toCheck = jumpIdxs.slice(-3);
+  for (const i of toCheck) EL_ROWS[i].cbHalf.checked = true;
+  refreshAll();
+}
+
+// ---- Group / Segment change ----
+
+function onSettingsChange() {
+  const group = getGroup();
+  const seg = getSegment();
+  if (group && !group.segs.includes(seg)) {
+    $('segment').value = group.segs[0];
+  }
+  updateRuleSummary();
+  refreshAll();
+}
+
+// ---- Save / Load / History ----
+
+const STORAGE_KEY = 'fs_calculator_programs';
+
+function saveProgram() {
+  const name = prompt('请输入节目名称：', '我的节目 ' + new Date().toLocaleDateString());
+  if (!name) return;
+
+  const data = {
+    name,
+    date: new Date().toISOString(),
+    gender: $('gender').value,
+    ageGroup: $('ageGroup').value,
+    segment: $('segment').value,
+    elements: [],
+    pcs: { comp:$('pcsComp').value, pres:$('pcsPres').value, skate:$('pcsSkate').value },
+    deductions: { falls:$('dedFalls').value, time:$('dedTime').value, music:$('dedMusic').value, other:$('dedOther').value }
+  };
+
+  for (const row of EL_ROWS) {
+    const code = row.input.value.trim();
+    if (!code) continue;
+    data.elements.push({
+      code,
+      isBonus: row.cbHalf.checked,
+      isFall: row.cbFall.checked,
+      goe: row.selGoe.value
+    });
+  }
+
+  const all = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  all.push(data);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+  updateHistoryCount();
+  alert('✅ 节目已保存！');
+}
+
+function loadPrograms() {
+  return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+}
+
+function updateHistoryCount() {
+  const all = loadPrograms();
+  $('btnHistory').textContent = '📂 加载历史 (' + all.length + ')';
+}
+
+function showHistory() {
+  const all = loadPrograms();
+  const list = $('historyList');
+  if (all.length === 0) {
+    list.innerHTML = '<div class="empty-state">📭 暂无保存的节目</div>';
+  } else {
+    let html = '';
+    for (let i = 0; i < all.length; i++) {
+      const p = all[i];
+      const d = new Date(p.date);
+      html += `<div class="history-item">
+        <div class="hi-info">
+          <div class="hi-name">${escHtml(p.name)}</div>
+          <div class="hi-meta">${GROUPS[p.ageGroup+'_'+p.gender]?.name||p.ageGroup} · ${p.segment==='sp'?'SP':'FS'} · ${d.toLocaleString()} · ${p.elements.length}个动作</div>
+        </div>
+        <div class="hi-actions">
+          <button class="btn btn-outline btn-sm" data-load="${i}">加载</button>
+          <button class="btn btn-danger btn-sm" data-del="${i}">删除</button>
+        </div>
+      </div>`;
+    }
+    list.innerHTML = html;
+
+    list.querySelectorAll('[data-load]').forEach(btn => {
+      btn.addEventListener('click', () => { loadProgram(parseInt(btn.dataset.load)); $('historyModal').classList.remove('show'); });
+    });
+    list.querySelectorAll('[data-del]').forEach(btn => {
+      btn.addEventListener('click', () => { deleteProgram(parseInt(btn.dataset.load)); });
+    });
+  }
+  $('historyModal').classList.add('show');
+}
+
+function loadProgram(idx) {
+  const all = loadPrograms();
+  if (idx < 0 || idx >= all.length) return;
+  const p = all[idx];
+
+  $('gender').value = p.gender;
+  $('ageGroup').value = p.ageGroup;
+  $('segment').value = p.segment;
+  $('pcsComp').value = p.pcs.comp;
+  $('pcsPres').value = p.pcs.pres;
+  $('pcsSkate').value = p.pcs.skate;
+  $('dedFalls').value = p.deductions.falls;
+  $('dedTime').value = p.deductions.time;
+  $('dedMusic').value = p.deductions.music;
+  $('dedOther').value = p.deductions.other;
+
+  // Rebuild rows
+  EL_ROWS.length = 0;
+  $('elementsBody').innerHTML = '';
+  const need = Math.max(p.elements.length, 8);
+  for (let i = 0; i < need; i++) createRow();
+  for (let i = 0; i < p.elements.length; i++) {
+    const el = p.elements[i];
+    const row = EL_ROWS[i];
+    row.input.value = el.code;
+    row.input.className = 'element-input';
+    row.cbHalf.checked = el.isBonus;
+    row.cbFall.checked = el.isFall;
+    row.selGoe.value = el.goe;
+  }
+
+  onSettingsChange();
+}
+
+function deleteProgram(idx) {
+  const all = loadPrograms();
+  if (idx < 0 || idx >= all.length) return;
+  if (!confirm(`确定要删除"${all[idx].name}"吗？`)) return;
+  all.splice(idx, 1);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+  updateHistoryCount();
+  showHistory(); // refresh modal
+}
+
+// ---- Export ----
+
+function buildProtocolLines() {
+  const group = getGroup();
+  const seg = getSegment();
+  const gender = $('gender').value;
+  const lines = [];
+
+  for (let i = 0; i < EL_ROWS.length; i++) {
+    const row = EL_ROWS[i];
+    const code = row.input.value.trim();
+    if (!code) continue;
+    const parsed = parseElement(code);
+    if (!parsed) continue;
+    const goe = parseInt(row.selGoe.value) || 0;
+    const sc = calculateElementScore(parsed, goe, row.cbFall.checked, row.cbHalf.checked, group, seg);
+    lines.push({
+      num: lines.length + 1,
+      code,
+      half: row.cbHalf.checked,
+      fall: row.cbFall.checked,
+      goe,
+      bv: sc.totalBv,
+      goeVal: sc.goeVal,
+      bonus: sc.bonus,
+      total: sc.total
+    });
+  }
+  return { lines, group, seg, gender };
+}
+
+function exportCSV() {
+  const { lines, group, seg, gender } = buildProtocolLines();
+  let csv = '\uFEFF花样滑冰评分小分表\n';
+  csv += `赛季,2025-2026\n组别,${group.name}\n节目,${seg==='sp'?'短节目 SP':'自由滑 FS'}\n\n`;
+  csv += '#,动作代码,后半程,摔倒,GOE,BV,GOE分,奖励,得分\n';
+
+  let tes = 0;
+  for (const l of lines) {
+    csv += `${l.num},${l.code},${l.half?'是':'否'},${l.fall?'是':'否'},${l.goe>=0?'+':''}${l.goe},${l.bv.toFixed(2)},${l.goeVal.toFixed(2)},${l.bonus.toFixed(2)},${l.total.toFixed(2)}\n`;
+    tes += l.total;
+  }
+
+  const comp  = parseFloat($('pcsComp').value) || 0;
+  const pres  = parseFloat($('pcsPres').value) || 0;
+  const skate = parseFloat($('pcsSkate').value) || 0;
+  const factor = group.pcsFactor[seg] || 0;
+  const pcs = (comp + pres + skate) * factor;
+
+  const falls  = parseInt($('dedFalls').value) || 0;
+  const tDed   = parseFloat($('dedTime').value) || 0;
+  const mDed   = parseFloat($('dedMusic').value) || 0;
+  const oDed   = parseFloat($('dedOther').value) || 0;
+  const totalDed = falls * group.fallDed + tDed + mDed + oDed;
+  const total = tes + pcs - totalDed;
+
+  // Bonus
+  const parsedEls = collectParsedElements();
+  const bonus = calcBonusJumps(parsedEls, group, seg);
+  if (bonus.points > 0) {
+    csv += `\n奖励加分,${bonus.points.toFixed(2)},${bonus.details.join('; ')}\n`;
+    tes += bonus.points;
+  }
+
+  csv += `\n技术分 TES,${tes.toFixed(2)}\n`;
+  csv += `节目内容分 PCS,${pcs.toFixed(2)} (${comp}+${pres}+${skate})×${factor}\n`;
+  csv += `扣分,${totalDed.toFixed(2)}\n`;
+  csv += `总分,${total.toFixed(2)}\n`;
+
+  downloadFile(csv, `小分表_${group.name}_${seg}_${new Date().toLocaleDateString()}.csv`, 'text/csv;charset=utf-8');
+}
+
+function exportHTML() {
+  const { lines, group, seg, gender } = buildProtocolLines();
+
+  const comp  = parseFloat($('pcsComp').value) || 0;
+  const pres  = parseFloat($('pcsPres').value) || 0;
+  const skate = parseFloat($('pcsSkate').value) || 0;
+  const factor = group.pcsFactor[seg] || 0;
+  const pcs = (comp + pres + skate) * factor;
+
+  const falls  = parseInt($('dedFalls').value) || 0;
+  const tDed   = parseFloat($('dedTime').value) || 0;
+  const mDed   = parseFloat($('dedMusic').value) || 0;
+  const oDed   = parseFloat($('dedOther').value) || 0;
+  const totalDed = falls * group.fallDed + tDed + mDed + oDed;
+
+  const parsedEls = collectParsedElements();
+  const bonus = calcBonusJumps(parsedEls, group, seg);
+  let tes = lines.reduce((s,l)=>s+l.total,0) + bonus.points;
+  const total = tes + pcs - totalDed;
+
+  let rows = '';
+  for (const l of lines) {
+    rows += `<tr>
+      <td>${l.num}</td><td><code>${l.code}</code></td>
+      <td>${l.half?'✓':''}</td><td>${l.fall?'✓':''}</td>
+      <td>${l.goe>=0?'+':''}${l.goe}</td>
+      <td class="num">${l.bv.toFixed(2)}</td>
+      <td class="num">${l.goeVal.toFixed(2)}</td>
+      <td class="num">${l.bonus>0?'+'+l.bonus.toFixed(2):'-'}</td>
+      <td class="num"><strong>${l.total.toFixed(2)}</strong></td>
+    </tr>`;
+  }
+
+  const html = `<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><title>花样滑冰小分表</title>
+<style>
+  body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; color: #333; }
+  h1 { text-align: center; font-size: 20px; margin-bottom: 4px; }
+  .meta { text-align: center; font-size: 13px; color: #666; margin-bottom: 20px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #f5f5f5; padding: 8px 6px; text-align: left; border-bottom: 2px solid #ddd; font-size: 11px; text-transform: uppercase; }
+  td { padding: 7px 6px; border-bottom: 1px solid #eee; }
+  td.num { text-align: right; font-family: monospace; }
+  .summary { margin-top: 20px; border-top: 2px solid #333; padding-top: 12px; }
+  .summary table { width: auto; margin-left: auto; }
+  .summary td { padding: 4px 12px; border: none; }
+  .summary .total { font-size: 18px; font-weight: 700; }
+  @media print { body { margin: 0; padding: 10px; } }
+</style></head><body>
+<h1>⛸️ 花样滑冰评分小分表</h1>
+<div class="meta">2025-2026赛季 · ${group.name} · ${seg==='sp'?'短节目 SP':'自由滑 FS'} · ${new Date().toLocaleDateString()}</div>
+<table>
+<thead><tr><th>#</th><th>动作代码</th><th>后半程</th><th>摔倒</th><th>GOE</th><th>BV</th><th>GOE分</th><th>奖励</th><th>得分</th></tr></thead>
+<tbody>${rows}</tbody>
+</table>
+${bonus.points > 0 ? `<p style="margin-top:8px;font-size:13px;">🏅 奖励加分：${bonus.details.join(' | ')} = +${bonus.points.toFixed(2)}</p>` : ''}
+<div class="summary">
+<table>
+<tr><td>技术分 TES</td><td class="num">${tes.toFixed(2)}</td></tr>
+<tr><td>节目内容分 PCS (${comp}+${pres}+${skate})×${factor}</td><td class="num">${pcs.toFixed(2)}</td></tr>
+<tr><td>扣分</td><td class="num">-${totalDed.toFixed(2)}</td></tr>
+<tr><td class="total">总分</td><td class="num total">${total.toFixed(2)}</td></tr>
+</table>
+</div>
+</body></html>`;
+
+  downloadFile(html, `小分表_${group.name}_${seg}_${new Date().toLocaleDateString()}.html`, 'text/html;charset=utf-8');
+}
+
+function downloadFile(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function resetAll() {
+  clearAllRows();
+  $('pcsComp').value = 0; $('pcsPres').value = 0; $('pcsSkate').value = 0;
+  $('dedFalls').value = 0; $('dedTime').value = 0; $('dedMusic').value = 0; $('dedOther').value = 0;
+  $('gender').value = 'male'; $('ageGroup').value = 'youth'; $('segment').value = 'fs';
+  onSettingsChange();
+}
+
+// =============================================================================
+// 6. INITIALIZATION
+// =============================================================================
+
+function init() {
+  // Create initial rows
+  for (let i = 0; i < 8; i++) createRow();
+
+  // Settings change events
+  $('gender').addEventListener('change', onSettingsChange);
+  $('ageGroup').addEventListener('change', onSettingsChange);
+  $('segment').addEventListener('change', onSettingsChange);
+
+  // PCS & deduction inputs
+  for (const id of ['pcsComp','pcsPres','pcsSkate','dedFalls','dedTime','dedMusic','dedOther']) {
+    $(id).addEventListener('input', refreshAll);
+  }
+
+  // Buttons
+  $('btnAdd').addEventListener('click', () => { createRow(); });
+  $('btnClear').addEventListener('click', clearAllRows);
+  $('btnAutoHalf').addEventListener('click', autoHalfBonus);
+  $('btnSave').addEventListener('click', saveProgram);
+  $('btnHistory').addEventListener('click', showHistory);
+  $('btnExportCSV').addEventListener('click', exportCSV);
+  $('btnExportHTML').addEventListener('click', exportHTML);
+  $('btnReset').addEventListener('click', resetAll);
+
+  // Modifier buttons
+  document.querySelectorAll('.modifier-btn').forEach(btn => {
+    btn.addEventListener('click', () => insertModifier(btn.dataset.mod));
+  });
+
+  // History modal
+  $('modalClose').addEventListener('click', () => $('historyModal').classList.remove('show'));
+  $('historyModal').addEventListener('click', (e) => { if(e.target===$('historyModal')) $('historyModal').classList.remove('show'); });
+
+  // Close autocomplete on outside click
+  document.addEventListener('click', (e) => {
+    if (!$('acDropdown').contains(e.target) && !e.target.classList.contains('element-input')) closeAc();
+  });
+
+  // Init
+  updateHistoryCount();
+  onSettingsChange();
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
